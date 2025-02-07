@@ -1,22 +1,22 @@
-﻿namespace Catalog.API.Products.UpdateProduct
+﻿using Catalog.API.Products.CreateProduct;
+
+namespace Catalog.API.Products.UpdateProduct
 {
     public record UpdateProductCommand(Guid Id, string Name, List<string> Category, string Description, string ImageFile, decimal Price)
          : ICommand<UpdateProductResult>;
 
     public record UpdateProductResult(bool IsSuccess);
 
-    internal class UpdateProductHandler(IDocumentSession session, ILogger<UpdateProductHandler> logger)
+    internal class UpdateProductHandler(IDocumentSession session)
         : ICommandHandler<UpdateProductCommand, UpdateProductResult>
     {
         public async Task<UpdateProductResult> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
-            logger.LogInformation("UpdateProductHandler.Hanld called with {@request}", request);
-
             var product = await session.LoadAsync<Product>(request.Id, cancellationToken);
 
             if (product == null)
             {
-                throw new ProductNotFoundException();
+                throw new ProductNotFoundException(request.Id);
             }
 
             product.Name = request.Name;
